@@ -15,6 +15,37 @@
 
 ![時間帯重複の検出（日付ではなく実際の日時で比較）](docs/images/overlap-timeline.svg)
 
+## デモ
+
+同梱のダミーデータ（`sample_attendance.csv`）を集計した画面です。
+
+### GUI
+
+<table>
+  <tr>
+    <td align="center"><img src="docs/images/gui-main.png" alt="GUIの起動直後の画面。勤怠CSVを選択し、集計してExcel保存ボタンを押す" width="400"><br>CSVを選んで「集計してExcel保存」を押す</td>
+    <td align="center"><img src="docs/images/gui-done.png" alt="集計完了後の画面。日別明細11件、警告9件と保存先を表示" width="400"><br>完了後は件数と保存先を表示</td>
+  </tr>
+</table>
+
+> 画像内のパスは、公開用にユーザー名を別の名前（alice）へ差し替えています。
+
+### 出力ファイル
+
+出力した `.xlsx` をGoogleスプレッドシートで開いた画面です。
+
+**人別集計** — 社員ごとの出勤日数・総労働・残業・深夜帯時間。表の下に、休憩を控除していないことと、時間帯重複を補正していないことの注記を出します。
+
+<img src="docs/images/excel-summary.png" alt="人別集計シート。社員ごとの出勤日数、総労働、残業、深夜帯時間と注記" width="800">
+
+**日別明細** — 警告がある日は黄色で表示し、備考に内容を出します。「森」は日跨ぎ勤務と時間帯重複が、10/6 と 10/7 の両方の日に付いています。「渡辺」は総労働15:00で長時間勤務です。
+
+<img src="docs/images/excel-daily.png" alt="日別明細シート。警告のある日が黄色で、備考に日跨ぎ勤務・時間帯重複・長時間勤務などが表示される" width="800">
+
+**警告一覧** — 警告の種類と詳細。「伊藤」は退勤が空欄のため、CSVの11行目として指摘し、計算対象外にしています。
+
+<img src="docs/images/excel-warnings.png" alt="警告一覧シート。社員名、日付、種別、内容の一覧" width="800">
+
 ## セットアップ
 
 Python 3.13.9（Windows 10）で動作確認しています。他の版は未確認です。

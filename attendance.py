@@ -191,12 +191,27 @@ def night_minutes(start: datetime, end: datetime, cfg: Config) -> int:
 
 
 # ---- 読み込み -----------------------------------------------------------
+class CsvFormatError(ValueError):
+    """CSVの列構成が不正なとき。メッセージはそのまま利用者に表示できる。"""
+
+
+# 現場名は集計に使わないので必須にしない
+REQUIRED_COLUMNS = ("社員名", "日付", "出勤", "退勤", "休憩(分)")
+
+
 def read_blocks(csv_path: str | Path, cfg: Config):
     """CSVを読み、(有効なBlockのリスト, 入力不備の警告リスト) を返す。"""
     blocks: list = []
     warnings: list = []
     with open(csv_path, encoding="utf-8-sig", newline="") as f:
         reader = csv.DictReader(f)
+        found = reader.fieldnames or []
+        missing = [c for c in REQUIRED_COLUMNS if c not in found]
+        if missing:                  # 列名の誤記で休憩が0分扱いになる等の、無言の誤集計を防ぐ
+            raise CsvFormatError(
+                f"CSVに必要な列がありません: {', '.join(missing)}\n"
+                f"必要な列: {', '.join(REQUIRED_COLUMNS)}（現場名は任意）\n"
+                f"見つかった列: {', '.join(found) if found else '（なし）'}")
         for i, row in enumerate(reader, start=2):      # 1行目はヘッダー
             name = (row.get("社員名") or "").strip()
             day_txt = (row.get("日付") or "").strip()

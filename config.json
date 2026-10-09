@@ -1,0 +1,6 @@
+{
+  "night_start": "22:00",
+  "night_end": "05:00",
+  "daily_limit_hours": 8,
+  "long_day_hours": 12
+}

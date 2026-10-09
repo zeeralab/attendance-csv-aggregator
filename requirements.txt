@@ -1,0 +1,5 @@
+# 直接依存のみ。動作確認した版（Python 3.13.9 / Windows 10）
+# 集計ロジック（attendance.py）と単体テストは標準ライブラリだけで動く。
+# openpyxl は Excel 出力、customtkinter は GUI（gui.py）でのみ使う。
+openpyxl==3.1.5
+customtkinter==5.2.2

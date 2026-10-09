@@ -1,0 +1,12 @@
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+
+# PyInstaller
+build/
+dist/
+*.spec
+
+# 作業用の出力（サンプル出力は勤怠集計_サンプル出力.xlsx のみ管理する）
+*_集計.xlsx

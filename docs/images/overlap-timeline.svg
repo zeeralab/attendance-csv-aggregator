@@ -1,0 +1,32 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 720 280" width="720" height="280" font-family="Meiryo, 'Yu Gothic', sans-serif" font-size="13">
+  <rect width="720" height="280" fill="#ffffff"/>
+  <text x="20" y="26" font-size="15" font-weight="bold" fill="#222">時間帯重複の検出（サンプルの「森」: 日付ではなく実際の日時で比較）</text>
+
+  <!-- 深夜帯 22:00〜翌5:00 -->
+  <rect x="160" y="50" width="350" height="130" fill="#e8eaf6"/>
+  <text x="165" y="66" fill="#3949ab" font-size="12">深夜帯 22:00〜翌5:00</text>
+
+  <!-- 勤務ブロック -->
+  <rect x="160" y="82" width="400" height="30" rx="3" fill="#305496"/>
+  <text x="168" y="102" fill="#fff">10/6 出勤  22:00 〜 翌06:00（日跨ぎ勤務）</text>
+  <rect x="510" y="128" width="150" height="30" rx="3" fill="#7f9bd1"/>
+  <text x="518" y="148" fill="#fff">10/7  05:00 〜 08:00</text>
+
+  <!-- 重複 -->
+  <rect x="510" y="50" width="50" height="130" fill="#ffc000" fill-opacity="0.45"/>
+  <text x="535" y="224" text-anchor="middle" fill="#9c6500" font-weight="bold">重複 1時間（05:00〜06:00）</text>
+
+  <!-- 時間軸（20:00〜翌09:00, 1時間=50px） -->
+  <line x1="60" y1="180" x2="710" y2="180" stroke="#555"/>
+  <g stroke="#555" fill="#555" font-size="11" text-anchor="middle">
+    <line x1="60"  y1="180" x2="60"  y2="186"/><text x="60"  y="200">20:00</text>
+    <line x1="160" y1="180" x2="160" y2="186"/><text x="160" y="200">22:00</text>
+    <line x1="310" y1="180" x2="310" y2="186"/><text x="310" y="200">01:00</text>
+    <line x1="510" y1="180" x2="510" y2="186"/><text x="510" y="200">05:00</text>
+    <line x1="560" y1="180" x2="560" y2="186"/><text x="560" y="200">06:00</text>
+    <line x1="660" y1="180" x2="660" y2="186"/><text x="660" y="200">08:00</text>
+  </g>
+
+  <text x="20" y="250" fill="#444" font-size="12">日付だけで比べると別々の日の勤務に見えて見逃す。実際の日時で比べるので、</text>
+  <text x="20" y="268" fill="#444" font-size="12">両方の日に警告が付く。総労働は補正せず、入力値のまま二重に合算する。</text>
+</svg>

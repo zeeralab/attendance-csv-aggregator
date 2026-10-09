@@ -21,9 +21,10 @@ from __future__ import annotations
 import argparse
 import csv
 import json
+import math
 import sys
 from collections import defaultdict
-from dataclasses import dataclass
+from dataclasses import dataclass, fields
 from datetime import date, datetime, timedelta
 from pathlib import Path
 
@@ -54,13 +55,57 @@ class Config:
         return round(self.long_day_hours * 60)
 
 
+class ConfigError(ValueError):
+    """設定ファイルの内容が不正なとき。メッセージはそのまま利用者に表示できる。"""
+
+
+_TIME_KEYS = ("night_start", "night_end")
+_HOURS_KEYS = ("daily_limit_hours", "long_day_hours")
+
+
+def validate_config(cfg: Config) -> None:
+    """明らかな誤りだけを弾く。運用としてあり得る設定は禁止しない。
+
+    - 時刻は HH:MM。night_start と night_end が同じ時刻なら深夜帯が成立しない
+    - 時間数は 0 以上の有限の数値（0 は「全時間を残業扱い」、24超は「残業なし」の運用）
+    - long_day_hours と daily_limit_hours は独立した閾値で、大小関係は問わない
+    """
+    parsed = {}
+    for key in _TIME_KEYS:
+        value = getattr(cfg, key)
+        try:
+            if not isinstance(value, str):
+                raise ValueError
+            parsed[key] = _parse_clock(value)
+        except ValueError:
+            raise ConfigError(f"{key}: 時刻は \"HH:MM\" 形式の文字列で指定してください（現在: {value!r}）") from None
+    if parsed["night_start"] == parsed["night_end"]:
+        raise ConfigError(f"night_start と night_end が同じ時刻です（{cfg.night_start}）。深夜帯の開始と終了は別の時刻にしてください")
+    for key in _HOURS_KEYS:
+        value = getattr(cfg, key)
+        if (isinstance(value, bool) or not isinstance(value, (int, float))
+                or not math.isfinite(value) or value < 0):
+            raise ConfigError(f"{key}: 0以上の数値で指定してください（現在: {value!r}）")
+
+
 def load_config(path: str | Path | None = None) -> Config:
     cfg = Config()
     if path:
-        data = json.loads(Path(path).read_text(encoding="utf-8"))
-        for key, value in data.items():
-            if hasattr(cfg, key) and not key.startswith("_"):
-                setattr(cfg, key, value)
+        try:
+            data = json.loads(Path(path).read_text(encoding="utf-8-sig"))
+        except json.JSONDecodeError as e:
+            raise ConfigError(f"設定ファイルをJSONとして読めません（{e.lineno}行目）: {e.msg}") from e
+        if not isinstance(data, dict):
+            raise ConfigError("設定ファイルは { } で囲んだ形式（JSONオブジェクト）にしてください")
+        known = [f.name for f in fields(Config)]
+        unknown = [k for k in data if k not in known and not k.startswith("_")]
+        if unknown:                      # 打ち間違いが黙って無視されるのを防ぐ
+            raise ConfigError(f"未知の設定キー: {', '.join(unknown)}"
+                              f"（使えるキー: {', '.join(known)}。先頭が _ のキーはメモ用として無視されます）")
+        for key in known:
+            if key in data:
+                setattr(cfg, key, data[key])
+    validate_config(cfg)
     return cfg
 
 

@@ -167,5 +167,40 @@ class TestCsvHeader(TempDirCase):
         self.assertTrue(issubclass(at.CsvFormatError, ValueError))
 
 
+# ---- S3: 氏名が空の行 ---------------------------------------------------
+class TestBlankName(TempDirCase):
+    def run_csv(self, *rows: str):
+        p = self.write("in.csv", "\n".join([HEADER, *rows]) + "\n")
+        return at.process(p, at.Config())
+
+    def test_blank_name_row_is_excluded_with_warning(self):
+        r = self.run_csv(ROW, ",2026-10-01,09:00,18:00,60,現場A")
+        self.assertEqual(set(r.daily), {("山田", at.date(2026, 10, 1))})   # 氏名なしの人は作らない
+        defects = [w for w in r.warnings if w.kind == at.W_DEFECT]
+        self.assertEqual(len(defects), 1)
+        self.assertEqual(defects[0].name, "(氏名なし)")
+        self.assertIn("3行目", defects[0].detail)
+        self.assertIn("社員名", defects[0].detail)
+
+    def test_whitespace_only_name_is_treated_as_blank(self):
+        r = self.run_csv("  ,2026-10-01,09:00,18:00,60,現場A")
+        self.assertEqual(r.daily, {})
+        self.assertEqual([w.kind for w in r.warnings], [at.W_DEFECT])
+
+    def test_other_people_are_not_affected(self):
+        with_blank = self.run_csv(ROW, ",2026-10-01,09:00,18:00,60,現場A")
+        without = self.run_csv(ROW)
+        self.assertEqual(with_blank.daily, without.daily)
+
+    def test_blank_name_with_bad_date_keeps_the_date_message(self):
+        # 複数の不備があるときは、従来どおり先に見つかった不備を報告する
+        r = self.run_csv(",bad,09:00,18:00,60,現場A")
+        self.assertIn("日付", r.warnings[0].detail)
+
+    def test_fully_blank_row_is_still_ignored(self):
+        r = self.run_csv(ROW, ",,,,,")
+        self.assertEqual(r.warnings, [])
+
+
 if __name__ == "__main__":
     unittest.main()

@@ -250,6 +250,9 @@ def read_blocks(csv_path: str | Path, cfg: Config):
             if brk < 0 or work < 0:
                 defect("休憩が不正（勤務時間より長いなど）", day)
                 continue
+            if not name:                 # 氏名なしの人として黙って集計しない
+                defect("社員名が空欄", day)
+                continue
             blocks.append(Block(i, name, day, start, end, brk, site, work,
                                 night_minutes(start, end, cfg)))
     return blocks, warnings

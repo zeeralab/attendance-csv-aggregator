@@ -71,6 +71,8 @@ class App(ctk.CTk):
             cfg = attendance.load_config(cfg_file if cfg_file.exists() else None)
             result = attendance.process(src, cfg)
             attendance.write_excel(result, out)
+        except (attendance.ConfigError, attendance.CsvFormatError) as e:
+            self._fail(str(e))          # 設定・CSV列の不備は、直し方が分かる原文をそのまま見せる
         except PermissionError:
             self._fail("保存できませんでした。保存先のExcelファイルを開いている場合は閉じてから、もう一度お試しください。")
         except UnicodeDecodeError:
